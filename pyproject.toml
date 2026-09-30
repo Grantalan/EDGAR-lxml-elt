@@ -1,0 +1,26 @@
+[project]
+name = "edgar-lxlm-scrape"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Grant Alan", email = "Grantmodels.ai@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "edgartools>=5.59.1",
+    "ipykernel>=7.4.0",
+    "lxml>=6.1.3",
+    "matplotlib>=3.11.2",
+    "nbconvert>=7.17.1",
+    "nbformat>=5.11.1",
+    "pandas>=3.0.6",
+    "requests>=2.34.2",
+]
+
+[project.scripts]
+edgar-lxlm-scrape = "edgar_lxlm_scrape:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
