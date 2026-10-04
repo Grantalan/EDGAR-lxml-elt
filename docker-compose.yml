@@ -1,0 +1,41 @@
+# Passwords come from .env (docker compose reads it automatically).
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.0-beta.8
+    container_name: edgar_rustfs
+    ports:
+      - "9010:9000"   # S3 API      -> boto3 points here (S3_ENDPOINT_URL)
+      - "9011:9001"   # web console -> http://localhost:9011 to browse the raw bucket
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY}
+      RUSTFS_CONSOLE_ENABLE: "true"
+    volumes:
+      - rustfs_data:/data
+    command: ["/data"]
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    container_name: edgar_clickhouse
+    depends_on:
+      - rustfs
+    ports:
+      - "8123:8123"   # HTTP API -> bronze.py and dbt talk to this
+      - "9002:9000"   # native protocol (9000 is taken by other weeks' RustFS)
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8123/ping"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  rustfs_data:
+  clickhouse_data:
